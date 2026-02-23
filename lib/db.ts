@@ -1,9 +1,4 @@
-import { Pool } from 'pg'
-
-// Single pool shared across all requests — this is the key to handling
-// 3000 users. Instead of a new connection per request, all requests
-// share a pool of 20 persistent connections via PgBouncer-style multiplexing.
-// Railway + Supabase free tier supports this comfortably.
+import { Pool, PoolClient } from 'pg'
 
 declare global {
   // eslint-disable-next-line no-var
@@ -16,20 +11,18 @@ function createPool(): Pool {
 
   return new Pool({
     connectionString,
-    max: 20,              // max 20 simultaneous DB connections
+    max: 20,
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 5_000,
-    ssl: { rejectUnauthorized: false }, // required for Supabase
+    ssl: { rejectUnauthorized: false },
   })
 }
 
-// In development, reuse pool across hot reloads to avoid exhausting connections
 const pool = globalThis._pgPool ?? createPool()
 if (process.env.NODE_ENV !== 'production') globalThis._pgPool = pool
 
 export { pool }
 
-// Typed query helper
 export async function query<T = Record<string, unknown>>(
   sql: string,
   params?: unknown[]
@@ -43,7 +36,6 @@ export async function query<T = Record<string, unknown>>(
   }
 }
 
-// Single-row helper — returns null if not found
 export async function queryOne<T = Record<string, unknown>>(
   sql: string,
   params?: unknown[]
@@ -52,15 +44,19 @@ export async function queryOne<T = Record<string, unknown>>(
   return rows[0] ?? null
 }
 
-// Transaction helper — runs multiple queries atomically
+// Transaction helper — typed inner query uses the same generic approach
 export async function transaction<T>(
-  fn: (q: (sql: string, params?: unknown[]) => Promise<unknown[]>) => Promise<T>
+  fn: (q: <R = Record<string, unknown>>(sql: string, params?: unknown[]) => Promise<R[]>) => Promise<T>
 ): Promise<T> {
-  const client = await pool.connect()
+  const client: PoolClient = await pool.connect()
   try {
     await client.query('BEGIN')
-    const q = (sql: string, params?: unknown[]) =>
-      client.query(sql, params).then(r => r.rows)
+
+    const q = async <R = Record<string, unknown>>(sql: string, params?: unknown[]): Promise<R[]> => {
+      const result = await client.query(sql, params)
+      return result.rows as R[]
+    }
+
     const result = await fn(q)
     await client.query('COMMIT')
     return result
