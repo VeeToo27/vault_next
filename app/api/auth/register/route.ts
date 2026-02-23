@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { queryOne, query } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   const { username, pin } = await req.json()
   if (!username || !pin) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })

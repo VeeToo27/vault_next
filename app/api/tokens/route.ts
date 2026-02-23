@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs'
 import { queryOne, query, transaction } from '@/lib/db'
 import { getSession } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   const session = await getSession(req)
   if (!session || session.role !== 'user')

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { query } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 const STALLS = [
   {
     stall_id: 'S101', name: 'Tasty Bites', pin: '2134',

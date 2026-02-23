@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs'
 import { query, queryOne } from '@/lib/db'
 import { getSession } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 async function requireAdmin(req: NextRequest) {
   const s = await getSession(req)
   return s?.role === 'admin' ? s : null

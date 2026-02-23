@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   // Fetch stalls and their menu items in two queries, then join in JS
   // This avoids a complex lateral join and is easy to understand

@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs'
 import { queryOne } from '@/lib/db'
 import { createSession, sessionCookieOptions } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   const { username, pin } = await req.json()
   if (!username || !pin) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })

@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs'
 import { queryOne } from '@/lib/db'
 import { createSession, sessionCookieOptions } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   const { stall_id, stall_name, pin } = await req.json()
   if (!stall_id || !stall_name || !pin)
